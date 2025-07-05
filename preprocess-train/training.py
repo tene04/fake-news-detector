@@ -7,7 +7,7 @@ from utils.functions import *
 
 
 # load all the data
-bert_data = np.load('./data/bert.npz', allow_pickle=True)
+bert_data = np.load('../data/bert.npz', allow_pickle=True)
 
 bert_train_encodings = {
     'input_ids': bert_data['train_input_ids'].tolist(),
@@ -22,7 +22,7 @@ bert_test_encodings = {
     'attention_mask': bert_data['test_attention_mask'].tolist()
 }
 
-roberta_data = np.load('./data/roberta.npz', allow_pickle=True)
+roberta_data = np.load('../data/roberta.npz', allow_pickle=True)
 
 roberta_train_encodings = {
     'input_ids': roberta_data['train_input_ids'].tolist(),
@@ -37,9 +37,9 @@ roberta_test_encodings = {
     'attention_mask': roberta_data['test_attention_mask'].tolist()
 }
 
-y_train = np.load('./data/y_train.npy', allow_pickle=True)
-y_test = np.load('./data/y_test.npy', allow_pickle=True)
-y_validation = np.load('./data/y_validation.npy', allow_pickle=True)
+y_train = np.load('../data/y_train.npy', allow_pickle=True)
+y_test = np.load('../data/y_test.npy', allow_pickle=True)
+y_validation = np.load('../data/y_validation.npy', allow_pickle=True)
 
 
 # turn it into Dataset
@@ -53,19 +53,20 @@ roberta_test_dataset = TextDataset(roberta_test_encodings, y_test.tolist())
 
 
 # create Dataloader
-train_loader_bert = DataLoader(bert_train_dataset, batch_size=16, shuffle=True)
-val_loader_bert = DataLoader(bert_val_dataset, batch_size=16, shuffle=False)
-test_loader_bert = DataLoader(bert_test_dataset, batch_size=16, shuffle=False)
+train_loader_bert = DataLoader(bert_train_dataset, batch_size=32, shuffle=True)
+val_loader_bert = DataLoader(bert_val_dataset, batch_size=32, shuffle=False)
+test_loader_bert = DataLoader(bert_test_dataset, batch_size=32, shuffle=False)
 
-train_loader_roberta = DataLoader(roberta_train_dataset, batch_size=16, shuffle=True)
-val_loader_roberta = DataLoader(roberta_val_dataset, batch_size=16, shuffle=False)
-test_loader_roberta = DataLoader(roberta_test_dataset, batch_size=16, shuffle=False)
+train_loader_roberta = DataLoader(roberta_train_dataset, batch_size=32, shuffle=True)
+val_loader_roberta = DataLoader(roberta_val_dataset, batch_size=32, shuffle=False)
+test_loader_roberta = DataLoader(roberta_test_dataset, batch_size=32, shuffle=False)
 
 
+# train pre-trained models
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-bert_f1 = train_and_evaluate('bert', train_loader_bert, val_loader_bert, test_loader_bert, device, epochs=5, save_path='best_bert_model.pt')
-roberta_f1 = train_and_evaluate('roberta', train_loader_roberta, val_loader_roberta, test_loader_roberta, device, epochs=5, save_path='best_roberta_model.pt')
+bert_f1 = train_and_evaluate('bert', train_loader_bert, val_loader_bert, test_loader_bert, device, epochs=5, save_path='../data/model/best_bert_model.pt')
+roberta_f1 = train_and_evaluate('roberta', train_loader_roberta, val_loader_roberta, test_loader_roberta, device, epochs=5, save_path='../data/model/best_roberta_model.pt')
 
 print(f"Best BERT F1: {bert_f1:.4f}")
 print(f"Best RoBERTa F1: {roberta_f1:.4f}")

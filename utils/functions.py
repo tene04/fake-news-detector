@@ -3,7 +3,7 @@ import torch
 from torch.optim import AdamW
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
-from transformers import BertForSequenceClassification, RobertaForSequenceClassification, BertTokenizer, RobertaTokenizer
+from transformers import BertForSequenceClassification, RobertaForSequenceClassification
 from tqdm import tqdm
 
 
@@ -75,12 +75,12 @@ def eval_model(model, data_loader, device):
     Evaluates the model on the given dataset
 
     Args:
-        model (torch.nn.Module): PyTorch model to evaluate
+        model (torch.nn.Module): model to evaluate
         data_loader (torch.utils.data.DataLoader): DataLoader providing batches of evaluation data
-        device (torch.device): Device where evaluation is performed (CPU or GPU)
+        device (torch.device): CPU or GPU
     """
     model.eval()
-    preds, true_labels = [], []
+    pred, original_labels = [], []
     total_loss = 0
     with torch.no_grad():
         for batch in tqdm(data_loader, desc="Evaluating", leave=False):
@@ -92,19 +92,19 @@ def eval_model(model, data_loader, device):
             total_loss += loss.item()
             logits = outputs.logits
             predictions = torch.argmax(logits, dim=-1)
-            preds.extend(predictions.cpu().numpy())
-            true_labels.extend(labels.cpu().numpy())
+            pred.extend(predictions.cpu().numpy())
+            original_labels.extend(labels.cpu().numpy())
     avg_loss = total_loss / len(data_loader)
-    acc = accuracy_score(true_labels, preds)
-    f1 = f1_score(true_labels, preds)
-    cm = confusion_matrix(true_labels, preds)
-    return avg_loss, acc, f1, cm
+    accuracy = accuracy_score(original_labels, pred)
+    f1 = f1_score(original_labels, pred)
+    cm = confusion_matrix(original_labels, pred)
+    return avg_loss, accuracy, f1, cm
 
 
 def train_and_evaluate(model_name, train_loader, val_loader, test_loader, device, epochs=3, save_path=None, lr=1e-4):
     """
     Trains and evaluates a transformer model (BERT or RoBERTa) for sequence classification,
-    save the best model and show the training progress (train_loss, loss, acc, fq)
+    save the best model and show the training progress (train_loss, loss, accuracy, fq)
 
     Args:
         model_name (str): Name of the model to train ('bert' or 'roberta')
@@ -144,7 +144,7 @@ def train_and_evaluate(model_name, train_loader, val_loader, test_loader, device
         history['val_acc'].append(val_acc)
         history['val_f1'].append(val_f1)
 
-        print(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f} - Val F1: {val_f1:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Accuracy: {val_acc:.4f} - Val F1: {val_f1:.4f}")
 
         if val_f1 > best_f1:
             best_f1 = val_f1
